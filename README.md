@@ -1,0 +1,1 @@
+#test auth GoLang sederhana
