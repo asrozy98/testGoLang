@@ -2,6 +2,7 @@ package router
 
 import (
 	"testGoLang/handler"
+	"testGoLang/middleware"
 	"testGoLang/repository"
 	"testGoLang/service"
 
@@ -13,9 +14,11 @@ func AuthRouter(route *gin.Engine, db *gorm.DB) {
 	authRepository := repository.NewAuthRepo(db)
 	authService := service.NewAuthService(authRepository)
 	authHandler := handler.NewAuthHandler(authService)
-	authRoter := route.Group("/api/auth")
+	authRouter := route.Group("/api/auth")
+	// authRouter.Use()
 	{
-		authRoter.POST("/login", authHandler.LoginHandler)
-		authRoter.POST("/register", authHandler.RegisterHandler)
+		authRouter.POST("/login", authHandler.LoginHandler)
+		authRouter.POST("/register", authHandler.RegisterHandler)
+		authRouter.GET("/profile", middleware.AuthJwtCheck(), authHandler.ProfileHandler)
 	}
 }
