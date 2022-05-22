@@ -16,7 +16,7 @@ func AuthJwtCheck() func(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
 				"message": "Bad Request",
-				"error":   "Request header auth Incorrect format",
+				"error":   "Request header auth not found",
 			})
 			c.Abort()
 			return

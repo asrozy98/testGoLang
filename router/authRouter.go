@@ -15,7 +15,6 @@ func AuthRouter(route *gin.Engine, db *gorm.DB) {
 	authService := service.NewAuthService(authRepository)
 	authHandler := handler.NewAuthHandler(authService)
 	authRouter := route.Group("/api/auth")
-	// authRouter.Use()
 	{
 		authRouter.POST("/login", authHandler.LoginHandler)
 		authRouter.POST("/register", authHandler.RegisterHandler)

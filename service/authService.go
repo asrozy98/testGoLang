@@ -12,7 +12,7 @@ import (
 
 type AuthService interface {
 	Login(loginRequest model.LoginRequest) (string, error)
-	Register(registerRequest model.RegisterRequest) (model.User, error)
+	Register(registerRequest model.RegisterRequest) (any, error)
 }
 
 type authService struct {
@@ -27,7 +27,6 @@ func NewAuthService(repository repository.AuthRepository) *authService {
 }
 
 func (s *authService) Login(loginRequest model.LoginRequest) (string, error) {
-	// var w http.ResponseWriter
 	user, err := s.authRepository.Login(loginRequest)
 
 	if err != nil {
@@ -42,36 +41,36 @@ func (s *authService) Login(loginRequest model.LoginRequest) (string, error) {
 		return "Password failure", err
 	}
 
-	expirationTime := time.Now().Add(5 * time.Minute)
+	expirationTime := time.Now().Add(10 * time.Minute)
 
 	claims := &model.Claims{
 		Email: user.Email,
 		StandardClaims: jwt.StandardClaims{
-			// In JWT, the expiry time is expressed as unix milliseconds
 			ExpiresAt: expirationTime.Unix(),
 		},
 	}
 
-	// Declare the token with the algorithm used for signing, and the claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	var jwtKey = []byte("my_secret_key")
-	// Create the JWT string
-	tokenString, err := token.SignedString(jwtKey)
+
+	tokenString, err := token.SignedString(model.JwtKey)
 	if err != nil {
-		// If there is an error in creating the JWT return an internal server error
 		return "Internal Server Error", err
 	}
 
 	return tokenString, err
 }
 
-func (s *authService) Register(registerRequest model.RegisterRequest) (model.User, error) {
+func (s *authService) Register(registerRequest model.RegisterRequest) (any, error) {
 	password, err := bcrypt.GenerateFromPassword([]byte(registerRequest.Password), bcrypt.DefaultCost)
 	user := model.User{
 		Name:     registerRequest.Name,
 		Email:    registerRequest.Email,
 		Password: password,
 	}
-	newUser, err := s.authRepository.Register(user)
-	return newUser, err
+	result, err := s.authRepository.Register(user)
+	if err != nil {
+		return "Bad Request", err
+	}
+
+	return result, err
 }

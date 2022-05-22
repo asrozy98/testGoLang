@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -9,8 +11,8 @@ func Router(db *gorm.DB) {
 	route := gin.Default()
 
 	route.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "hello word",
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Hello Word",
 		})
 	})
 

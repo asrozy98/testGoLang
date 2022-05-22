@@ -26,7 +26,7 @@ func (handler *authHandler) LoginHandler(c *gin.Context) {
 			errorMessage := fmt.Sprintf("Error on %s, because: %s", e.Field(), e.ActualTag())
 			errorMessages = append(errorMessages, errorMessage)
 		}
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Validation error",
 			"error":   errorMessages,
@@ -45,11 +45,12 @@ func (handler *authHandler) LoginHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"token":   result,
-		"expires": "5 minutes",
-		"error":   err,
+		"data": gin.H{
+			"token":   result,
+			"expires": "10 minutes",
+		},
 	})
 
 }
@@ -63,17 +64,27 @@ func (handler *authHandler) RegisterHandler(c *gin.Context) {
 			errorMessage := fmt.Sprintf("Error on %s, because: %s", e.Field(), e.ActualTag())
 			errorMessages = append(errorMessages, errorMessage)
 		}
-		c.JSON(400, gin.H{
-			"error": errorMessages,
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Validation error",
+			"error":   errorMessages,
 		})
 		return
 	}
 
-	newUser, err := handler.authService.Register(registerRequest)
-	c.JSON(200, gin.H{
+	result, err := handler.authService.Register(registerRequest)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": result,
+			"error":   err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
 		"message": "Register success",
-		"data":    newUser,
-		"error":   err,
+		"data":    result,
 	})
 }
 
@@ -81,7 +92,6 @@ func (handler *authHandler) ProfileHandler(c *gin.Context) {
 	email := c.MustGet("email").(string)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "Login success",
 		"data":    gin.H{"email": email},
 	})
 }
